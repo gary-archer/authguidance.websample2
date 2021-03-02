@@ -85,11 +85,11 @@ export class TransactionsView {
                             <div class='card'>
                                 <div class='card-body'>
                                     <div class='row'>
-                                        <div class='col-6'>Transaction Id</div>
+                                        <div class='col-6'>Transaction ID</div>
                                         <div class='col-6 text-right valuecolor font-weight-bold'>{{id}}</div>
                                     </div>
                                     <div class='row'>
-                                        <div class='col-6'>Investor Id</div>
+                                        <div class='col-6'>Investor ID</div>
                                         <div class='col-6 text-right valuecolor font-weight-bold'>{{investorId}}</div>
                                     </div>
                                     <div class='row'>
