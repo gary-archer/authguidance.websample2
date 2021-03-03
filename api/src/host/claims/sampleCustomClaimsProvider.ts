@@ -1,5 +1,6 @@
-import {Request} from 'express';
-import {ApiClaims} from '../../logic/entities/apiClaims';
+import {CustomClaims} from '../../logic/entities/claims/customClaims';
+import {TokenClaims} from '../../logic/entities/claims/tokenClaims';
+import {UserInfoClaims} from '../../logic/entities/claims/userInfoClaims';
 import {CustomClaimsProvider} from './customClaimsProvider';
 
 /*
@@ -8,35 +9,20 @@ import {CustomClaimsProvider} from './customClaimsProvider';
 export class SampleCustomClaimsProvider implements CustomClaimsProvider {
 
     /*
-     * Add details from the API's own database
+     * Add claims from the API's own database
      */
-    public async addCustomClaims(accessToken: string, request: Request, claims: ApiClaims): Promise<void> {
+    public async getCustomClaims(token: TokenClaims, userInfo: UserInfoClaims): Promise<CustomClaims> {
 
-        // Look up the user id in the API's own database
-        this._lookupDatabaseUserId(claims);
+        // A real implementation would look up the database user id from the subject and / or email claim
+        const email = userInfo.email;
+        const userDatabaseId = '10345';
 
-        // Look up the user id in the API's own data
-        this._lookupAuthorizationData(claims);
-    }
-
-    /*
-     * A real implementation would get the subject / email claims and find a match in the API's own data
-     */
-    private _lookupDatabaseUserId(claims: ApiClaims): void {
-        claims.userDatabaseId = '10345';
-    }
-
-    /*
-     * A real implementation would look up authorization data from the API's own data
-     */
-    private _lookupAuthorizationData(claims: ApiClaims): void {
-
-        // Our blog's code samples have two fixed users and use the below mock implementation:
+        // Our blog's code samples have two fixed users and we use the below mock implementation:
         // - guestadmin@mycompany.com is an admin and sees all data
-        // - guestuser@mycompany.com is not an admin and only sees data for their own region
-        claims.isAdmin = claims.email.toLowerCase().indexOf('admin') !== -1;
-        if (!claims.isAdmin) {
-            claims.regionsCovered = ['USA'];
-        }
+        // - guestuser@mycompany.com is not an admin and only sees data for the USA region
+        const isAdmin = email.toLowerCase().indexOf('admin') !== -1;
+        const regionsCovered = isAdmin? [] : ['USA'];
+
+        return new CustomClaims(userDatabaseId, isAdmin, regionsCovered);
     }
 }

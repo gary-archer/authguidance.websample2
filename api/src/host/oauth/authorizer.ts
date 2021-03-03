@@ -1,6 +1,6 @@
 import {Request} from 'express';
 import hasher from 'js-sha256';
-import {ApiClaims} from '../../logic/entities/apiClaims';
+import {SampleClaims} from '../../logic/entities/claims/sampleClaims';
 import {ClientError} from '../../logic/errors/clientError';
 import {ClaimsCache} from '../claims/claimsCache';
 import {CustomClaimsProvider} from '../claims/customClaimsProvider';
@@ -29,7 +29,7 @@ export class Authorizer {
     /*
      * Authorize a request and return claims on success, which can then be injected into business logic
      */
-    public async authorizeRequestAndGetClaims(request: Request): Promise<ApiClaims> {
+    public async authorizeRequestAndGetClaims(request: Request): Promise<SampleClaims> {
 
         // First read the access token
         const accessToken = this._readAccessToken(request);
@@ -44,19 +44,18 @@ export class Authorizer {
             return cachedClaims;
         }
 
-        // Otherwise create new claims which we will populate
-        const claims = new ApiClaims();
+        // Otherwise start by validating the token
+        const tokenClaims = await this._authenticator.validateToken(accessToken);
 
-        // Do the work for token introspection and user info lookup
-        await this._authenticator.validateTokenAndGetClaims(accessToken, request, claims);
+        // Do the work for user info lookup
+        const userInfoClaims = await this._authenticator.getUserInfo(accessToken);
 
         // Look up any product specific custom claims if required
-        await this._customClaimsProvider.addCustomClaims(accessToken, request, claims);
+        const customClaims = await this._customClaimsProvider.getCustomClaims(tokenClaims, userInfoClaims);
 
-        // Cache the claims against the token hash until the token's expiry time
-        await this._cache.addClaimsForToken(accessTokenHash, claims);
-
-        // Return the new claims
+        // Cache the claims and then return them
+        const claims = new SampleClaims(tokenClaims, userInfoClaims, customClaims);
+        this._cache.addClaimsForToken(accessTokenHash, claims);
         return claims;
     }
 

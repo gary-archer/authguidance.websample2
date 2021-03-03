@@ -1,6 +1,6 @@
-import {Request} from 'express';
 import {Client, custom, IntrospectionResponse, Issuer, UserinfoResponse} from 'openid-client';
-import {ApiClaims} from '../../logic/entities/apiClaims';
+import {TokenClaims} from '../../logic/entities/claims/tokenClaims';
+import {UserInfoClaims} from '../../logic/entities/claims/userInfoClaims';
 import {ClientError} from '../../logic/errors/clientError';
 import {OAuthConfiguration} from '../configuration/oauthConfiguration';
 import {ErrorHandler} from '../errors/errorHandler';
@@ -17,25 +17,12 @@ export class Authenticator {
     public constructor(oauthConfig: OAuthConfiguration, issuer: Issuer<Client>) {
         this._oauthConfig = oauthConfig;
         this._issuer = issuer;
-        this._setupCallbacks();
-    }
-
-    /*
-     * Our form of authentication performs introspection and user info lookup
-     */
-    public async validateTokenAndGetClaims(accessToken: string, request: Request, claims: ApiClaims): Promise<void> {
-
-        // Our implementation introspects the token to get token claims
-        await this._introspectTokenAndGetTokenClaims(accessToken, claims);
-
-        // It then adds user info claims
-        await this._getUserInfoClaims(accessToken, claims);
     }
 
     /*
      * Make a call to the introspection endpoint to read our token
      */
-    private async _introspectTokenAndGetTokenClaims(accessToken: string, claims: ApiClaims): Promise<void> {
+    public async validateToken(accessToken: string): Promise<TokenClaims> {
 
         // Create the Open Id Client
         const client = new this._issuer.Client({
@@ -64,8 +51,8 @@ export class Authenticator {
                 throw ClientError.create401('Access token does not have a valid scope for this API');
             }
 
-            // Update the claims object then return the expiry claim
-            claims.setTokenInfo(userId, clientId, scopes, expiry);
+            // Return the claims object
+            return new TokenClaims(userId, clientId, scopes, expiry);
 
         } catch (e) {
 
@@ -78,7 +65,7 @@ export class Authenticator {
      * We will read central user data by calling the Open Id Connect User Info endpoint
      * For many companies it may instead make sense to call a Central User Info API
      */
-    private async _getUserInfoClaims(accessToken: string, claims: ApiClaims): Promise<void> {
+    public async getUserInfo(accessToken: string): Promise<UserInfoClaims> {
 
         // Create the Open Id Client
         const client = new this._issuer.Client({
@@ -97,7 +84,7 @@ export class Authenticator {
             const email = this._getClaim(userInfo.email, 'email');
 
             // Update the claims object
-            claims.setUserInfo(givenName, familyName, email);
+            return new UserInfoClaims(givenName, familyName, email);
 
         } catch (e) {
 
@@ -116,12 +103,5 @@ export class Authenticator {
         }
 
         return claim;
-    }
-
-    /*
-     * Plumbing to ensure that the this parameter is available in async callbacks
-     */
-    private _setupCallbacks(): void {
-        this.validateTokenAndGetClaims = this.validateTokenAndGetClaims.bind(this);
     }
 }

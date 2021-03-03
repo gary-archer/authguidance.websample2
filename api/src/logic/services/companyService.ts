@@ -1,5 +1,5 @@
 import {ErrorCodes} from '../../host/errors/errorCodes';
-import {ApiClaims} from '../entities/apiClaims';
+import {CustomClaims} from '../entities/claims/customClaims';
 import {Company} from '../entities/company';
 import {CompanyTransactions} from '../entities/companyTransactions';
 import {ClientError} from '../errors/clientError';
@@ -11,9 +11,9 @@ import {CompanyRepository} from '../repositories/companyRepository';
 export class CompanyService {
 
     private readonly _repository: CompanyRepository;
-    private readonly _claims: ApiClaims;
+    private readonly _claims: CustomClaims;
 
-    public constructor(repository: CompanyRepository, claims: ApiClaims) {
+    public constructor(repository: CompanyRepository, claims: CustomClaims) {
         this._repository = repository;
         this._claims = claims;
     }

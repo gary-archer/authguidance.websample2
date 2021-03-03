@@ -1,26 +1,17 @@
-import {ApiClaims} from '../entities/apiClaims';
-import {UserInfoClaims} from '../entities/userInfoClaims';
+import {UserInfoClaims} from '../entities/claims/userInfoClaims';
 
 /*
- * Our user info service runs after claims handling has completed
+ * We can return any user data to our UI clients here, including both OAuth and non OAuth data
  */
 export class UserInfoService {
 
-    private readonly _claims: ApiClaims;
+    private readonly _claims: UserInfoClaims;
 
-    public constructor(claims: ApiClaims) {
+    public constructor(claims: UserInfoClaims) {
         this._claims = claims;
     }
 
-    /*
-     * We can return any user info to the API, not just data from tokens
-     */
-    public getUserClaims(): UserInfoClaims {
-
-        return {
-            givenName: this._claims.givenName,
-            familyName: this._claims.familyName,
-            email: this._claims.email,
-        };
+    public getUserClaims(): any {
+        return this._claims.toWireFormat();
     }
 }

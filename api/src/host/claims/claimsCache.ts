@@ -1,5 +1,5 @@
 import NodeCache from 'node-cache';
-import {ApiClaims} from '../../logic/entities/apiClaims';
+import {SampleClaims} from '../../logic/entities/claims/sampleClaims';
 import {OAuthConfiguration} from '../configuration/oauthConfiguration';
 import {ApiLogger} from '../utilities/apiLogger';
 
@@ -8,7 +8,6 @@ import {ApiLogger} from '../utilities/apiLogger';
  */
 export class ClaimsCache {
 
-    // The singleton cache
     private readonly _cache: NodeCache;
 
     /*
@@ -32,10 +31,10 @@ export class ClaimsCache {
     /*
      * Get claims from the cache or return null if not found
      */
-    public async getClaimsForToken(accessTokenHash: string): Promise<ApiClaims | null> {
+    public async getClaimsForToken(accessTokenHash: string): Promise<SampleClaims | null> {
 
         // Get the token hash and see if it exists in the cache
-        const claims = await this._cache.get<ApiClaims>(accessTokenHash);
+        const claims = await this._cache.get<SampleClaims>(accessTokenHash);
         if (!claims) {
 
             // If this is a new token and we need to do claims processing
@@ -51,11 +50,11 @@ export class ClaimsCache {
     /*
      * Add claims to the cache until the token's time to live
      */
-    public async addClaimsForToken(accessTokenHash: string, claims: ApiClaims): Promise<void> {
+    public async addClaimsForToken(accessTokenHash: string, claims: SampleClaims): Promise<void> {
 
         // Use the exp field returned from introspection to work out the token expiry time
         const epochSeconds = Math.floor((new Date() as any) / 1000);
-        let secondsToCache = claims.expiry - epochSeconds;
+        let secondsToCache = claims.token.expiry - epochSeconds;
         if (secondsToCache > 0) {
 
             // Get the hash and output debug info

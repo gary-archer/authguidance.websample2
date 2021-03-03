@@ -1,4 +1,5 @@
 import {NextFunction, Request, Response} from 'express';
+import { SampleClaims } from '../../logic/entities/claims/sampleClaims';
 import {ClientError} from '../../logic/errors/clientError';
 import {CompanyRepository} from '../../logic/repositories/companyRepository';
 import {CompanyService} from '../../logic/services/companyService';
@@ -61,7 +62,7 @@ export class Router {
     public getUserClaims(request: Request, response: Response): void {
 
         // Create a user service and ask it for the user info
-        const service = new UserInfoService(response.locals.claims);
+        const service = new UserInfoService(this._getClaims(response).userInfo);
         const claims = service.getUserClaims();
         ResponseWriter.writeObjectResponse(response, 200, claims);
     }
@@ -74,7 +75,7 @@ export class Router {
         // Create the service instance and its dependencies on every API request
         const reader = new JsonFileReader();
         const repository = new CompanyRepository(reader);
-        const service = new CompanyService(repository, response.locals.claims);
+        const service = new CompanyService(repository, this._getClaims(response).custom);
 
         // Get the data and return it in the response
         const result = await service.getCompanyList();
@@ -89,7 +90,7 @@ export class Router {
         // Create the service instance and its dependencies on every API request
         const reader = new JsonFileReader();
         const repository = new CompanyRepository(reader);
-        const service = new CompanyService(repository, response.locals.claims);
+        const service = new CompanyService(repository, this._getClaims(response).custom);
 
         // Get the supplied id as a number, and return 400 if invalid input was received
         const id = parseInt(request.params.id, 10);
@@ -141,6 +142,13 @@ export class Router {
             response,
             clientError.statusCode,
             clientError.toResponseFormat());
+    }
+
+    /*
+     * A helper utility to get typed claims
+     */
+    private _getClaims(response: Response): SampleClaims {
+        return response.locals.claims as SampleClaims;
     }
 
     /*
