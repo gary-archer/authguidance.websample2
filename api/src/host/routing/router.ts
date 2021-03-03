@@ -1,5 +1,5 @@
 import {NextFunction, Request, Response} from 'express';
-import { SampleClaims } from '../../logic/entities/claims/sampleClaims';
+import {SampleClaims} from '../../logic/entities/claims/sampleClaims';
 import {ClientError} from '../../logic/errors/clientError';
 import {CompanyRepository} from '../../logic/repositories/companyRepository';
 import {CompanyService} from '../../logic/services/companyService';
