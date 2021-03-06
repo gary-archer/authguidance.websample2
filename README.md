@@ -8,7 +8,7 @@
 
 ### Overview
 
-* The updated SPA and API sample using OAuth 2.x and Open Id Connect, referenced in my blog at https://authguidance.com
+* The updated SPA and API sample using OAuth and Open Id Connect, referenced in my blog at https://authguidance.com
 * This sample completes [SPA Session Management](https://authguidance.com/2017/10/24/user-sessions-and-token-renewal/) and implements our [API Authorization Design](https://authguidance.com/2017/10/03/api-tokens-claims/)
 
 ### Details
